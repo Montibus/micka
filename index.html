@@ -2,68 +2,223 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Dog Walker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Micka Tracker</title>
   <link rel="manifest" href="manifest.json">
+  <!-- PWA Specifics to force Standalone -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#121212">
   <style>
-    body { font-family: system-ui, sans-serif; text-align: center; margin: 0; padding: 20px; background: #f4f4f9; }
-    .status-banner { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .btn { display: block; width: 100%; padding: 25px; margin: 15px 0; font-size: 24px; border: none; border-radius: 16px; cursor: pointer; color: white; transition: opacity 0.2s; }
-    .btn:active { opacity: 0.7; }
-    .btn-poop { background: #8B4513; }
-    .btn-puddle { background: #4169E1; }
-    .btn-walk { background: #2E8B57; }
-    .manual-entry { margin-top: 30px; color: #666; text-decoration: underline; cursor: pointer; }
+    :root { --bg: #121212; --card-bg: #1e1e1e; --text: #ffffff; --green: #4CAF50; --muted: #aaa; --border: #333;}
+    body { font-family: system-ui, sans-serif; text-align: center; margin: 0; padding: 0; background: var(--bg); color: var(--text); padding-bottom: calc(env(safe-area-inset-bottom) + 20px); }
+    
+    /* PWA Install Button */
+    #pwaInstallPrompt { display: none; background: #E57373; color: white; padding: 10px; border-radius: 8px; margin: 15px 20px; cursor: pointer; border: none; font-weight: bold; }
+    #pwaInstallPrompt.active { display: block; }
+
+    /* Navigation Tabs */
+    .nav { display: flex; background: var(--card-bg); padding: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .nav-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--muted); font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; }
+    .nav-btn.active { background: #333; color: var(--text); border-bottom: 2px solid var(--green); }
+
+    .tab-content { display: none; padding: 0 20px; }
+    .tab-content.active { display: block; }
+
+    /* Dashboard Layout */
+    .primary-status { background: var(--card-bg); padding: 25px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border); }
+    .primary-label { color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+    .primary-time { font-size: 36px; font-weight: bold; margin: 10px 0; color: #fff; }
+    .primary-results { font-size: 56px; } /* Result icons are integrated with time below */
+    
+    .history-list { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 25px; }
+    .history-item { background: var(--card-bg); padding: 12px; border-radius: 12px; flex: 1; font-size: 14px; color: var(--muted); border: 1px solid var(--border); }
+    .history-item.empty { visibility: hidden; }
+    .history-results { font-size: 24px; margin-top: 5px; }
+
+    /* Action Buttons (Integrated Icons Only) */
+    .btn-container { display: flex; gap: 15px; margin-bottom: 15px; }
+    .btn { flex: 1; padding: 35px 0; font-size: 55px; border: none; border-radius: 16px; cursor: pointer; transition: opacity 0.2s; -webkit-tap-highlight-color: transparent;}
+    .btn:active { opacity: 0.5; }
+    .btn-poop { background: #5D4037; }
+    .btn-puddle { background: #1976D2; }
+    .btn-walk { width: 100%; padding: 25px; font-size: 45px; background: #2E7D32; border: none; border-radius: 16px; cursor: pointer; }
+    
+    /* Health Info Section */
+    .health-card { background: var(--card-bg); padding: 15px; border-radius: 12px; text-align: left; margin-bottom: 15px; border: 1px solid var(--border); }
+    .health-card h3 { margin: 0 0 10px 0; color: var(--green); }
+    .health-card p { margin: 5px 0; color: #ccc; }
   </style>
 </head>
 <body>
-  <div class="status-banner">
-    <h2 style="margin:0; font-size: 18px; color: #333;">Last Walked</h2>
-    <p id="lastWalkTime" style="font-size: 16px; color: #666;">Loading...</p>
-    <div id="lastWalkResults" style="font-size: 24px;"></div>
+
+  <!-- PROACTIVE PWA INSTALL PROMPT (Visible only if not installed) -->
+  <button id="pwaInstallPrompt">Get App Mode (Full Screen)</button>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="switchTab('logs', this)">Walks</button>
+    <button class="nav-btn" onclick="switchTab('health', this)">Health & ID</button>
   </div>
 
-  <button class="btn btn-poop" onclick="logWalk(true, false, 'Action')">💩 Poop</button>
-  <button class="btn btn-puddle" onclick="logWalk(false, true, 'Action')">💦 Puddle</button>
-  <button class="btn btn-walk" onclick="logWalk(false, false, 'Just Walk')">🐾 Just Walk</button>
+  <!-- WALK LOGS TAB -->
+  <div id="logs" class="tab-content active">
+    
+    <!-- Most Recent Walk (Highly Visible) -->
+    <div class="primary-status" id="primaryStatus">
+      <div class="primary-label">Last Walk</div>
+      <div class="primary-time" id="time-0">Loading...</div>
+      <!-- Result icons now integrated here via JS -->
+    </div>
 
-  <div class="manual-entry" onclick="alert('Manual entry modal would open here')">Log a past walk manually</div>
+    <!-- Prior Two Walks -->
+    <div class="history-list">
+      <div class="history-item empty" id="history-1">
+        <div class="history-time" id="time-1">-</div>
+        <div class="history-results" id="res-1"></div>
+      </div>
+      <div class="history-item empty" id="history-2">
+        <div class="history-time" id="time-2">-</div>
+        <div class="history-results" id="res-2"></div>
+      </div>
+    </div>
+
+    <!-- Main Buttons -->
+    <div class="btn-container">
+      <button class="btn btn-poop" onclick="logWalk(true, false, 'Action')">💩</button>
+      <button class="btn btn-puddle" onclick="logWalk(false, true, 'Action')">💦</button>
+    </div>
+    <button class="btn-walk" onclick="logWalk(false, false, 'Just Walk')">🐾</button>
+  </div>
+
+  <!-- HEALTH & ID TAB -->
+  <div id="health" class="tab-content">
+    <div class="health-card">
+      <h3>Identity</h3>
+      <p><strong>Name:</strong> Micka</p>
+      <p><strong>Microchip:</strong> 123-456-789</p>
+    </div>
+    <div class="health-card">
+      <h3>Medical Records</h3>
+      <p><strong>Rabies Vax:</strong> Due Oct 2026</p>
+      <p><strong>Tick Tablet:</strong> Next dose: 1st of month</p>
+      <p><strong>Vet Clinic:</strong> 555-0199</p>
+    </div>
+    <p style="color: #666; font-size: 12px; margin-top: 20px;">*Edit these static details directly in the index.html file.</p>
+  </div>
 
   <script>
-    // Your active Google Apps Script Web App URL
+    // REPLACE WITH YOUR NEW DEPLOYMENT URL
     const API_URL = "https://script.google.com/macros/s/AKfycbzzJ7r3AJZWwW0T2yTaNpmFtZz6bUh37xrb7jj_Qr4N_dLNiQz3nGoOBqzNt_hONA2K/exec";
 
-    async function fetchLastWalk() {
+    // --- PWA Installation Logic (CRUCIAL FIX) ---
+    let deferredPrompt;
+    const installBtn = document.getElementById('pwaInstallPrompt');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the browser's default prompt from appearing automatically
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      deferredPrompt = e;
+      // Update UI to show the install button, only if not already in standalone mode
+      if (!window.matchMedia('(display-mode: standalone)').matches) {
+          installBtn.classList.add('active');
+      }
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      // Show the install prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      // We've used the prompt, and can't use it again, clear it
+      deferredPrompt = null;
+      installBtn.classList.remove('active');
+    });
+
+    // Check if app is already running in standalone mode
+    window.addEventListener('appinstalled', (evt) => {
+      installBtn.classList.remove('active');
+      deferredPrompt = null;
+    });
+
+    // Tab switcher logic
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Format time to "Today, 14:30" or "Yesterday, 09:15" (Seconds removed)
+    function formatRelativeTime(dateString) {
+      if (!dateString) return "-";
+      const date = new Date(dateString);
+      const now = new Date();
+      
+      const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      const isYesterday = date.getDate() === yesterday.getDate() && date.getMonth() === yesterday.getMonth() && date.getFullYear() === yesterday.getFullYear();
+
+      const hours = date.getHours().toString().padStart(2, '0');
+      const mins = date.getMinutes().toString().padStart(2, '0');
+      const timeStr = `${hours}:${mins}`;
+
+      if (isToday) return `Today, ${timeStr}`;
+      if (isYesterday) return `Yesterday, ${timeStr}`;
+      
+      return `${date.getDate()}.${date.getMonth()+1}. ${timeStr}`;
+    }
+
+    async function fetchData() {
       try {
         const response = await fetch(API_URL);
-        const data = await response.json();
-        if (data.time) {
-          const date = new Date(data.time);
-          document.getElementById('lastWalkTime').innerText = date.toLocaleString();
-          document.getElementById('lastWalkResults').innerText = 
-            (data.poop ? "💩 " : "") + (data.puddle ? "💦 " : "");
-        } else {
-          document.getElementById('lastWalkTime').innerText = "No records yet.";
+        const data = await response.json(); // Array of up to 3 objects
+        
+        for(let i=0; i<3; i++) {
+          const resDiv = i === 0 ? document.getElementById(`time-0`) : document.getElementById(`res-${i}`);
+          const timeDiv = document.getElementById(`time-${i}`);
+          const itemDiv = document.getElementById(`history-${i}`);
+
+          if(data[i]) {
+            if(i > 0) itemDiv.classList.remove('empty'); // Show history cards
+            
+            timeDiv.innerText = formatRelativeTime(data[i].time);
+            
+            let results = "";
+            if (!data[i].poop && !data[i].puddle) results = "🐾";
+            if (data[i].poop) results += " 💩";
+            if (data[i].puddle) results += " 💦";
+            
+            if(i === 0) {
+                resDiv.innerText += results; // Integrate results into the primary time banner
+            } else {
+                resDiv.innerText = results; // Set results for history cards
+            }
+          }
         }
       } catch (e) {
-        document.getElementById('lastWalkTime').innerText = "Error loading data.";
+        document.getElementById('time-0').innerText = "Network Error";
       }
     }
 
     async function logWalk(poop, puddle, type) {
-      // Visual feedback
-      document.getElementById('lastWalkTime').innerText = "Saving...";
+      document.getElementById('time-0').innerText = "Saving...";
       
+      // Vibrate phone for physical feedback if supported
+      if (navigator.vibrate) navigator.vibrate(50);
+
       await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ poop, puddle, type, timestamp: new Date().toISOString() })
+        body: JSON.stringify({ poop, puddle, type })
       });
-      
-      fetchLastWalk();
+      location.reload(); // Hard reload after save to clear state and refresh merged entries
     }
 
-    // Load data on start
-    fetchLastWalk();
+    fetchData();
   </script>
 </body>
 </html>
