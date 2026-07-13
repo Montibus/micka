@@ -10,49 +10,47 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#121212">
   <style>
-    :root { --bg: #121212; --card-bg: #1e1e1e; --text: #ffffff; --green: #4CAF50; --muted: #aaa; --border: #333;}
-    body { font-family: system-ui, sans-serif; text-align: center; margin: 0; padding: 0; background: var(--bg); color: var(--text); padding-bottom: 20px; user-select: none; -webkit-user-select: none;}
+    :root { --bg: #121212; --text: #ffffff; --muted: #888; --border: #333;}
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); user-select: none; -webkit-user-select: none; overflow: hidden;}
     
-    .nav { display: flex; background: var(--card-bg); padding: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border); }
-    .nav-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--muted); font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; }
-    .nav-btn.active { background: #333; color: var(--text); border-bottom: 2px solid var(--green); }
-
-    .tab-content { display: none; padding: 0 15px; }
-    .tab-content.active { display: block; }
-
-    /* Dashboard Layout */
-    .primary-status { background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border); transition: background 0.3s;}
-    .primary-status.away { background: #3a2a18; border-color: #f57c00; }
-    .primary-label { color: var(--green); font-size: 16px; font-weight: bold; margin-bottom: 5px;}
-    .primary-time { font-size: 26px; font-weight: bold; margin: 5px 0; color: #fff; }
+    .nav { display: flex; padding: 10px; border-bottom: 1px solid var(--border); margin-bottom: 15px;}
+    .nav-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--muted); font-size: 16px; font-weight: bold; cursor: pointer; }
+    .nav-btn.active { color: var(--text); border-bottom: 2px solid #4CAF50; }
     
-    .custody-btn { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; margin-bottom: 20px; background: #37474F; color: white;}
-    .custody-btn.return { background: #E64A19; }
+    .tab-content { display: none; padding: 0 15px; height: calc(100vh - 70px); display: flex; flex-direction: column;}
+    .tab-content.hidden { display: none !important; }
 
-    /* Scrollable History View (Swipe Down to see more) */
-    .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 230px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px; }
-    .history-item { background: var(--card-bg); padding: 12px 15px; border-radius: 12px; font-size: 14px; text-align: left; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
-    .history-item.long-walk { background: #112211; border-color: #2E7D32; }
-    .history-item.away { background: #2d2116; border-color: #5D4037; }
+    /* The 3-Line Flat History Window */
+    .history-window { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border);}
+    .history-line { display: flex; justify-content: space-between; align-items: center; font-size: 20px; padding: 8px 0; border-bottom: 1px solid #222; }
+    .history-line:last-child { border-bottom: none; }
     
-    .history-walker { font-weight: bold; color: var(--text); margin-bottom: 3px; font-size: 15px;}
-    .history-time { color: var(--muted); font-size: 12px;}
-    .history-results { font-size: 24px; }
+    /* Typography & Alignment */
+    .hl-left { display: flex; align-items: center; gap: 8px; }
+    .hl-time { color: var(--muted); font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .hl-dash { color: #555; }
+    .hl-person { font-weight: bold; color: white; }
+    .hl-icons { font-size: 24px; letter-spacing: 2px; }
+    
+    .green-dog { display: inline-block; color: transparent; text-shadow: 0 0 0 #4CAF50; }
+    .red-note { color: #F44336; font-weight: bold; font-size: 18px; margin-left: 5px; }
 
-    /* Action Buttons */
-    .btn-container { display: flex; gap: 15px; margin-bottom: 15px; }
-    .btn { flex: 1; padding: 35px 0; font-size: 55px; border: none; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent;}
-    .btn:active { opacity: 0.7; }
-    .btn-poop { background: #5D4037; }
-    .btn-puddle { background: #1976D2; }
-    .btn-walk { width: 100%; padding: 25px; font-size: 45px; background: #2E7D32; border: none; border-radius: 16px; cursor: pointer; }
+    /* 2x2 Ergonomic Grid */
+    .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 20px; }
+    .btn { padding: 35px 0; font-size: 50px; border: none; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; justify-content: center; align-items: center; }
+    .btn:active { opacity: 0.6; }
+    
+    .btn-green { background: #1B5E20; }
+    .btn-brown { background: #4E342E; }
+    .btn-yellow { background: #F57F17; }
+    .btn-blue { background: #0D47A1; }
+
+    /* Custody Lock Screen */
+    .custody-lock { display: none; flex-grow: 1; flex-direction: column; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; letter-spacing: 2px; color: #F57F17;}
     
     /* Health Tab */
-    .health-card { background: var(--card-bg); padding: 15px; border-radius: 12px; text-align: left; margin-bottom: 15px; border: 1px solid var(--border); }
-    .health-card h3 { margin: 0 0 10px 0; color: var(--green); }
-    .health-row { display: flex; justify-content: space-between; margin: 8px 0; padding-bottom: 8px; border-bottom: 1px solid #333; }
-    .health-label { font-weight: bold; color: #ccc; }
-    .health-value { color: #fff; text-align: right;}
+    .health-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; font-size: 16px;}
+    .health-label { font-weight: bold; color: #aaa; }
   </style>
 </head>
 <body>
@@ -62,33 +60,30 @@
     <button class="nav-btn" onclick="switchTab('health', this)">Passport</button>
   </div>
 
-  <div id="logs" class="tab-content active">
+  <div id="logs" class="tab-content">
     
-    <div class="primary-status" id="primaryStatus">
-      <div class="primary-label" id="status-label">Loading...</div>
-      <div class="primary-time" id="status-time"></div>
-    </div>
-    
-    <button id="custody-btn" class="custody-btn" style="display: none;"></button>
+    <!-- Locked view for non-custodians -->
+    <div id="custody-lock" class="custody-lock"></div>
 
-    <div class="history-list" id="history-container">
-       <!-- Dynamically populated. Scroll to see more. -->
-    </div>
+    <!-- Active view for everyone else -->
+    <div id="active-interface" style="display: flex; flex-direction: column; height: 100%;">
+      
+      <div class="history-window" id="history-container">
+         <div style="color: #555; text-align: center; margin: auto;">Loading...</div>
+      </div>
 
-    <div class="btn-container">
-      <button class="btn btn-poop" id="btn-poop">💩</button>
-      <button class="btn btn-puddle" id="btn-puddle">💦</button>
+      <div class="grid-2x2">
+        <button class="btn btn-green" id="btn-walk"><span class="green-dog">🐕</span></button>
+        <button class="btn btn-brown" id="btn-poop">💩</button>
+        <button class="btn btn-yellow" id="btn-custody">👤</button>
+        <button class="btn btn-blue" id="btn-puddle">💦</button>
+      </div>
+      
     </div>
-    <button class="btn-walk" id="btn-walk">🐾</button>
-    
-    <p style="color: #666; font-size: 12px; margin-top: 10px;">Press and hold any button for 1s to add a medical note.</p>
   </div>
 
-  <div id="health" class="tab-content">
-    <div class="health-card" id="passport-container">
-      <h3>Micka's Passport</h3>
-      <div style="color: #888;">Loading data...</div>
-    </div>
+  <div id="health" class="tab-content hidden" style="display: block;">
+    <div id="passport-container">Loading...</div>
   </div>
 
   <script>
@@ -96,61 +91,59 @@
     // ⬇️ ⬇️ ⬇️ DO NOT DELETE - THIS IS YOUR GOOGLE SCRIPT CONNECTION ⬇️ ⬇️ ⬇️
     // ========================================================================
     
-    const API_URL = "https://script.google.com/macros/s/AKfycbwrpxzJS9esgO0u65BRFzzZPJEPxFIYBEtM9-qdp-QqZUOKjwK3aTb3GR6MwXIeB-b2/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPSi_-36T2dt6KcujJJxfr48MxyWCZt0_fsTc45PU37XYiTry67YuNRZP9ivtQpvEL/exec";
     
     // ========================================================================
     // ⬆️ ⬆️ ⬆️ YOUR GOOGLE SCRIPT URL ENDS HERE ⬆️ ⬆️ ⬆️
     // ========================================================================
 
-    // Read ?user= URL parameter and save it permanently for this device
     const urlParams = new URLSearchParams(window.location.search);
     const currentUser = urlParams.get('user') || localStorage.getItem('micka_walker') || "Someone";
     localStorage.setItem('micka_walker', currentUser);
-
-    // Disable context menus (right click/long press native menus) to allow custom long-press
+    
     window.oncontextmenu = function(event) { event.preventDefault(); event.stopPropagation(); return false; };
 
     function switchTab(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('logs').classList.add('hidden');
+      document.getElementById('health').classList.add('hidden');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
+      document.getElementById(tabId).classList.remove('hidden');
       btn.classList.add('active');
     }
-
-    function formatRelativeTime(dateString) {
-      if (!dateString) return "-";
-      const date = new Date(dateString);
+    
+    // Tabular Time Formatting
+    function formatTime(dateStr) {
+      const d = new Date(dateStr);
       const now = new Date();
-      const isToday = date.toDateString() === now.toDateString();
+      const time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+      
+      const isToday = d.toDateString() === now.toDateString();
       const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
-      const isYesterday = date.toDateString() === yesterday.toDateString();
+      const isYesterday = d.toDateString() === yesterday.toDateString();
 
-      const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-      if (isToday) return `Today, ${timeStr}`;
-      if (isYesterday) return `Yesterday, ${timeStr}`;
-      return `${date.getDate()}.${date.getMonth()+1}. ${timeStr}`;
+      if (isToday) return `<span style="visibility: hidden;">◀</span> ${time}`;
+      if (isYesterday) return `◀ ${time}`;
+      return `${time}`; // Fallback for much older, though rare
     }
 
-    // Custom Long-Press Logic for Note taking
-    function setupButton(elId, poop, puddle, type) {
+    // Long Press Notes Logic
+    function setupButton(elId, actionFn) {
       const el = document.getElementById(elId);
-      let timer;
-      let isLong = false;
+      let timer; let isLong = false;
       
       const start = (e) => {
          isLong = false;
          timer = setTimeout(() => {
             isLong = true;
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Haptic feedback
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             let note = prompt("Enter note (blood, diarrhea, etc.):");
-            if (note !== null) logWalk(poop, puddle, type, note);
-         }, 600); // 600ms hold triggers note
+            if (note !== null) actionFn(note);
+         }, 600);
       };
-      
       const end = (e) => {
          clearTimeout(timer);
-         if (!isLong) logWalk(poop, puddle, type, ""); // Normal short tap
-         if (e.cancelable) e.preventDefault(); // Stop ghost clicks
+         if (!isLong) actionFn("");
+         if (e.cancelable) e.preventDefault();
       };
       
       el.addEventListener('touchstart', start, {passive: true});
@@ -160,119 +153,151 @@
       el.addEventListener('mouseleave', () => clearTimeout(timer));
     }
 
-    // Attach logic to buttons
-    setupButton('btn-poop', true, false, 'Action');
-    setupButton('btn-puddle', false, true, 'Action');
-    setupButton('btn-walk', false, false, 'Long Walk'); // Green button now does Long Walk
+    // Assign standard actions
+    setupButton('btn-walk', (note) => logWalk(false, false, 'Long Walk', note));
+    setupButton('btn-poop', (note) => logWalk(true, false, 'Action', note));
+    setupButton('btn-puddle', (note) => logWalk(false, true, 'Action', note));
+    
+    // Yellow Custody Button Logic
+    let isCurrentlyCustodian = false;
+    document.getElementById('btn-custody').onclick = () => {
+      if (confirm(`Are you sure you want to ${isCurrentlyCustodian ? "return the dog" : "take the dog"}?`)) {
+          logWalk(false, false, isCurrentlyCustodian ? 'Returned' : 'Custody', "");
+      }
+    };
+
+    // Swipe to Undo Logic
+    let touchstartX = 0;
+    let container = document.getElementById('history-container');
+    container.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, {passive: true});
+    container.addEventListener('touchend', e => {
+      if (touchstartX - e.changedTouches[0].screenX > 60) { // Swiped Left
+         requestUndo();
+      }
+    }, {passive: true});
 
     async function fetchData() {
       try {
         const response = await fetch(API_URL);
         const data = await response.json(); 
         
-        // 1. Setup Status & Custody Banner
+        // 1. Custody State Check
         const isAway = data.status.type === 'Custody';
-        const primaryStatus = document.getElementById('primaryStatus');
-        const cBtn = document.getElementById('custody-btn');
-        
-        if (isAway) {
-            primaryStatus.classList.add('away');
-            document.getElementById('status-label').innerText = "Currently Away With:";
-            document.getElementById('status-time').innerText = data.status.who;
-            
-            // Only show return button if THIS phone belongs to the person who took the dog
-            if (currentUser === data.status.who) {
-                cBtn.innerText = "🔙 Return to Collective Care";
-                cBtn.className = "custody-btn return";
-                cBtn.onclick = () => logWalk(false, false, 'Returned', "");
-                cBtn.style.display = "block";
-            } else {
-                cBtn.style.display = "none";
-            }
+        const lockScreen = document.getElementById('custody-lock');
+        const activeUI = document.getElementById('active-interface');
+        const yellowBtn = document.getElementById('btn-custody');
+
+        if (isAway && data.status.who !== currentUser) {
+            activeUI.style.display = 'none';
+            lockScreen.style.display = 'flex';
+            lockScreen.innerText = data.status.who;
         } else {
-            primaryStatus.classList.remove('away');
-            document.getElementById('status-label').innerText = "Last Walk";
+            activeUI.style.display = 'flex';
+            lockScreen.style.display = 'none';
             
-            // Find the most recent actual walk for the banner
-            const lastActualWalk = data.logs.find(l => l.type === 'Action' || l.type === 'Long Walk');
-            let bannerIcons = '';
-            if (lastActualWalk) {
-               document.getElementById('status-time').innerText = formatRelativeTime(lastActualWalk.time);
-               if (lastActualWalk.type === 'Long Walk') bannerIcons += '<span style="color: #4CAF50;">🐕</span> ';
-               if (lastActualWalk.poop) bannerIcons += '💩 ';
-               if (lastActualWalk.puddle) bannerIcons += '💦 ';
-               document.getElementById('status-label').innerHTML = `Last Walk &nbsp;&nbsp;&nbsp; <span style="font-size:24px;">${bannerIcons}</span>`;
+            if (isAway && data.status.who === currentUser) {
+                isCurrentlyCustodian = true;
+                yellowBtn.innerHTML = '🏡';
+            } else {
+                isCurrentlyCustodian = false;
+                yellowBtn.innerHTML = '👤';
             }
-            
-            cBtn.innerText = "🏡 Dog is with me";
-            cBtn.className = "custody-btn";
-            cBtn.onclick = () => logWalk(false, false, 'Custody', "");
-            cBtn.style.display = "block";
         }
 
-        // 2. Build Scrollable History
-        let historyHTML = '';
+        // 2. The 10-Minute Visual Merge 
+        let mergedLogs = [];
+        let currentGroup = null;
+        
         data.logs.forEach(log => {
-           let cssClass = 'history-item';
-           let iconHTML = '';
-           
-           if (log.type === 'Custody') {
-              cssClass += ' away';
-              iconHTML = '👤';
-           } else if (log.type === 'Returned') {
-              cssClass += ' away';
-              iconHTML = '👥';
-           } else if (log.type === 'Long Walk') {
-              cssClass += ' long-walk';
-              iconHTML = '<span style="color: #4CAF50;">🐕</span>'; // Green running dog
+           if (log.type === 'Custody' || log.type === 'Returned') {
+               if (currentGroup) mergedLogs.push(currentGroup);
+               mergedLogs.push({...log});
+               currentGroup = null; 
+               return;
+           }
+
+           if (!currentGroup) {
+               currentGroup = {...log};
            } else {
-              iconHTML = '🐾';
+               const diffMins = (new Date(log.time) - new Date(currentGroup.time)) / 60000;
+               // If within 10 minutes and same person, squash them together
+               if (diffMins <= 10 && log.who === currentGroup.who) {
+                   currentGroup.poop = currentGroup.poop || log.poop;
+                   currentGroup.puddle = currentGroup.puddle || log.puddle;
+                   if (log.type === 'Long Walk') currentGroup.type = 'Long Walk';
+                   if (log.note) currentGroup.note = currentGroup.note ? currentGroup.note + " | " + log.note : log.note;
+               } else {
+                   mergedLogs.push(currentGroup);
+                   currentGroup = {...log};
+               }
+           }
+        });
+        if (currentGroup) mergedLogs.push(currentGroup);
+
+        // 3. Render the Flat 3-Line List
+        let html = '';
+        mergedLogs.forEach(log => {
+           let icons = '';
+           if (log.type === 'Custody') icons = '👤';
+           else if (log.type === 'Returned') icons = '🏡';
+           else {
+               if (log.type === 'Long Walk') icons += '<span class="green-dog">🐕</span> ';
+               if (log.poop) icons += '💩 ';
+               if (log.puddle) icons += '💦 ';
+               if (log.note) icons += `<span class="red-note" onclick="alert('${log.note}')">❗</span>`;
            }
            
-           if (log.poop) iconHTML += ' 💩';
-           if (log.puddle) iconHTML += ' 💦';
-           if (log.note) iconHTML += ' <span style="color: red; font-weight:bold; margin-left: 5px;">❗</span>';
-           
-           // If it has a note, make the row clickable to read it
-           let clickAction = log.note ? `onclick="alert('Note from ${log.who}:\\n${log.note}')"` : '';
-           
-           historyHTML += `
-             <div class="${cssClass}" ${clickAction}>
-               <div>
-                 <div class="history-walker">${log.who}</div>
-                 <div class="history-time">${formatRelativeTime(log.time)}</div>
+           html += `
+             <div class="history-line">
+               <div class="hl-left">
+                 <span class="hl-time">${formatTime(log.time)}</span>
+                 <span class="hl-dash">&mdash;</span>
+                 <span class="hl-person">${log.who}</span>
                </div>
-               <div class="history-results">${iconHTML}</div>
+               <div class="hl-icons">${icons}</div>
              </div>`;
         });
-        document.getElementById('history-container').innerHTML = historyHTML;
+        
+        container.innerHTML = html;
+        // Scroll to the absolute bottom (newest items)
+        container.scrollTop = container.scrollHeight; 
 
-        // 3. Populate Passport Data
-        let passportHTML = '<h3>Micka\'s Passport</h3>';
+        // 4. Passport
+        let passHtml = '';
         data.dogInfo.forEach(info => {
-            passportHTML += `
-              <div class="health-row">
-                 <div class="health-label">${info.label}</div>
-                 <div class="health-value">${info.value}</div>
-              </div>`;
+            passHtml += `<div class="health-row"><span class="health-label">${info.label}</span><span>${info.value}</span></div>`;
         });
-        document.getElementById('passport-container').innerHTML = passportHTML;
+        document.getElementById('passport-container').innerHTML = passHtml;
         
       } catch (e) {
-        document.getElementById('status-label').innerText = "Network Error";
-        document.getElementById('status-time').innerText = "Please check URL.";
+        container.innerHTML = '<div style="color:red; text-align:center;">Network Error</div>';
       }
     }
 
     async function logWalk(poop, puddle, type, note) {
-      document.getElementById('status-time').innerText = "Saving...";
+      if (navigator.vibrate) navigator.vibrate(50);
       await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({ poop, puddle, type, who: currentUser, note: note })
       });
       location.reload(); 
     }
+    
+    async function requestUndo() {
+      if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'undo' })
+      });
+      const result = await res.json();
+      if (result.status === 'success') {
+          location.reload();
+      } else {
+          alert("Too late to undo! (More than 60 seconds passed)");
+      }
+    }
 
+    switchTab('logs', document.querySelector('.nav-btn')); // Start on logs tab, not health
     fetchData();
   </script>
 </body>
