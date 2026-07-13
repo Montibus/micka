@@ -11,67 +11,80 @@
   <meta name="theme-color" content="#121212">
   <style>
     :root { --bg: #121212; --text: #ffffff; --muted: #888; --border: #333;}
-    body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); user-select: none; -webkit-user-select: none; height: 100vh; overflow: hidden; display: flex; flex-direction: column;}
+    /* Using 100dvh prevents mobile address bars from hiding the bottom buttons */
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); user-select: none; -webkit-user-select: none; height: 100dvh; overflow: hidden; display: flex; flex-direction: column;}
     
-    /* Install Banner */
-    #install-banner { display: none; background: #D32F2F; color: white; padding: 12px; text-align: center; font-weight: bold; cursor: pointer; z-index: 99999; }
+    #install-banner { display: none; background: #D32F2F; color: white; padding: 12px; text-align: center; font-weight: bold; cursor: pointer; z-index: 99999; flex-shrink: 0;}
 
-    /* Navigation (3-Tab Layout) */
+    /* Navigation */
     .nav { display: flex; padding: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;}
     .nav-btn { flex: 1; padding: 10px 5px; background: none; border: none; color: var(--muted); font-size: 16px; font-weight: bold; cursor: pointer; position: relative;}
     .nav-btn.active { color: var(--text); border-bottom: 2px solid #4CAF50; }
     .warning-badge { position: absolute; top: 0; right: 5px; color: #F44336; font-weight: bold; font-size: 20px; }
-
-    /* Tab Containers */
-    .tab-content { flex-grow: 1; padding: 0 15px; display: none; flex-direction: column; overflow: hidden;}
+    .tab-content { flex-grow: 1; padding: 0 15px; display: none; flex-direction: column; overflow-y: auto;}
     .tab-content.active { display: flex; }
 
-    /* Walks Layout */
-    .history-wrapper { flex-grow: 1; position: relative; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 15px; }
-    .history-window { overflow-y: auto; display: flex; flex-direction: column; max-height: calc(3 * 45px); padding-bottom: 5px; transition: max-height 0.2s ease-out; scroll-behavior: smooth;}
+    /* Walks Layout - Top-aligned, grid sits under history */
+    #logs { justify-content: flex-start; padding: 0 15px; }
     
-    /* Z-Index Overlay Mode */
-    .history-window.overlay-mode { position: absolute; bottom: 0; left: 0; width: 100%; max-height: 50vh; background: rgba(18,18,18,0.98); box-shadow: 0 -10px 20px rgba(0,0,0,0.8); z-index: 10; border-top: 1px solid #333; padding-top: 10px;}
+    .main-dog-title { text-align: center; font-size: 36px; font-weight: bold; color: #4CAF50; margin: 10px 0 5px 0; }
+
+    .history-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 15px; border-radius: 12px; }
+
+    .history-window { overflow-y: hidden; display: flex; flex-direction: column; max-height: 140px; padding-bottom: 5px; transition: max-height 0.3s ease-out; scroll-behavior: smooth;}
     
-    .history-line { display: flex; justify-content: space-between; align-items: center; font-size: 20px; padding: 10px 0; border-bottom: 1px solid #222; transition: opacity 0.2s, transform 0.2s;}
+    /* Expanded Mode - Simply grows downward naturally */
+    .history-window.expanded { max-height: 60vh; overflow-y: auto; }
+    
+    .history-line { display: flex; justify-content: space-between; align-items: center; font-size: 24px; padding: 8px 0; border-bottom: 1px solid #333; transition: opacity 0.2s, transform 0.2s;}
     .history-line.deleting { opacity: 0.3; transform: translateX(-40px); }
     .history-line:last-child { border-bottom: none; }
     
-    /* Typography */
-    .hl-left { display: flex; align-items: center; gap: 8px; }
-    .hl-time { color: var(--muted); font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .hl-dash { color: #555; }
-    .hl-person { font-weight: bold; color: white; }
+    .hl-left { display: flex; align-items: center; gap: 10px; }
+    .hl-time { color: #FFEB3B; font-size: 24px; font-weight: bold; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .hl-dash { color: #FFFFFF; font-weight: bold; }
+    .hl-person { font-weight: bold; color: #FFFFFF; font-size: 24px;}
     .hl-icons { font-size: 24px; letter-spacing: 2px; text-align: right; min-width: 60px;}
     .green-dog { display: inline-block; color: transparent; text-shadow: 0 0 0 #4CAF50; }
     .red-note { color: #F44336; font-weight: bold; font-size: 18px; margin-left: 5px; cursor: pointer; }
 
-    /* 2x2 Grid with Touch-Action none to prevent Chrome interception */
-    .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 20px; flex-shrink: 0; }
-    .btn { touch-action: none; padding: 35px 0; font-size: 50px; border: none; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; justify-content: center; align-items: center; }
-    .btn:active { opacity: 0.6; }
+    .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-shrink: 0; }
+    .btn { touch-action: none; padding: 35px 0; font-size: 50px; border: none; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    .btn:active { opacity: 0.6; transform: scale(0.98); }
     
     .btn-green { background: #1B5E20; }
     .btn-brown { background: #4E342E; }
     .btn-yellow { background: #F57F17; }
     .btn-blue { background: #0D47A1; }
 
-    /* Locks, Modals & Toasts */
     .custody-lock { display: none; flex-grow: 1; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; letter-spacing: 2px; color: #F57F17;}
-    #toast { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none;}
     
-    #onboarding-modal { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;}
-    .ob-btn { background: #333; color: white; border: 1px solid #555; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin: 5px; cursor: pointer;}
-    .ob-input { background: #222; color: white; border: 1px solid #555; padding: 15px; font-size: 18px; border-radius: 12px; margin-top: 15px; width: 80%; max-width: 300px; outline:none;}
-    .ob-save { background: #4CAF50; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin-top: 10px; cursor: pointer; width: 80%; max-width: 300px;}
+    /* Modals & Toasts */
+    #toast { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; font-size: 15px; font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
+    
+    .modal-backdrop { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px);}
+    
+    /* Custom Confirm Box */
+    .confirm-box { background: #222; padding: 25px; border-radius: 16px; text-align: center; width: 85%; max-width: 320px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .confirm-msg { font-size: 20px; font-weight: bold; margin-bottom: 25px; }
+    .confirm-row { display: flex; gap: 15px; justify-content: space-between; }
+    .confirm-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+    .btn-yes { background: #4CAF50; color: white; }
+    .btn-no { background: #555; color: white; }
 
-    /* List Tabs (Passport & Events) */
+    /* Onboarding Inputs */
+    .ob-btn { background: #333; color: white; border: 1px solid #555; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin: 5px; cursor: pointer;}
+    .ob-input { background: #222; color: white; border: 1px solid #555; padding: 15px; font-size: 18px; border-radius: 12px; margin-top: 15px; width: 100%; box-sizing: border-box; outline:none;}
+    .ob-save { background: #4CAF50; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin-top: 15px; cursor: pointer; width: 100%;}
+    
+    /* Passport & Events */
     .list-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; font-size: 16px;}
     .list-label { font-weight: bold; color: #aaa; }
     .list-val { text-align: right; }
-    .category-header { color: #4CAF50; font-weight: bold; margin-top: 15px; padding-bottom: 5px; border-bottom: 1px solid #4CAF50;}
+    .category-header { color: #4CAF50; font-weight: bold; margin-top: 20px; padding-bottom: 5px; border-bottom: 1px solid #4CAF50;}
     .warn-text { color: #F44336; font-weight: bold; }
     .warn-bg { background: rgba(244, 67, 54, 0.1); border-radius: 8px; padding: 0 5px;}
+    .change-user-btn { margin-top: 30px; background: #333; color: #aaa; border: 1px solid #444; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -80,14 +93,28 @@
   <div id="toast">Message</div>
 
   <!-- Onboarding Modal -->
-  <div id="onboarding-modal">
-    <h2 style="margin-bottom: 20px;">Who is walking Micka?</h2>
-    <div id="ob-user-list" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"></div>
-    <div style="margin-top: 30px; color: var(--muted);">Or enter a new name:</div>
-    <input type="text" id="ob-new-name" class="ob-input" placeholder="Your name...">
-    <button class="ob-save" onclick="saveNewUser()">Save</button>
+  <div id="onboarding-modal" class="modal-backdrop" style="background: var(--bg);">
+    <div style="width: 100%; max-width: 320px; text-align: center;">
+      <h2 style="margin-bottom: 25px; font-size: 28px;">Who are you?</h2>
+      <div id="ob-user-list" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"></div>
+      <div style="margin-top: 35px; color: var(--muted); font-size: 14px;">Or enter a new name:</div>
+      <input type="text" id="ob-new-name" class="ob-input" placeholder="Your name...">
+      <button class="ob-save" onclick="saveNewUser()">Save Name</button>
+    </div>
   </div>
 
+  <!-- Custom Confirmation Modal (Replaces browser confirm()) -->
+  <div id="confirm-modal" class="modal-backdrop">
+    <div class="confirm-box">
+      <div id="confirm-msg" class="confirm-msg">Are you sure?</div>
+      <div class="confirm-row">
+        <button class="confirm-btn btn-no" onclick="closeConfirm(false)">No</button>
+        <button class="confirm-btn btn-yes" onclick="closeConfirm(true)">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
   <div class="nav">
     <button class="nav-btn active" onclick="switchTab('logs', this)">Walks</button>
     <button class="nav-btn" onclick="switchTab('health', this)">Passport</button>
@@ -99,26 +126,35 @@
     <div id="custody-lock" class="custody-lock"></div>
 
     <div id="active-interface" style="display: flex; flex-direction: column; height: 100%;">
-      <div class="history-wrapper">
+      
+      <!-- Dog Name at the top -->
+      <div id="main-dog-name" class="main-dog-title">Micka</div>
+
+      <!-- History directly below name, expands downwards on long-press -->
+      <div class="history-wrapper" id="history-touch-zone">
          <div class="history-window" id="history-container">
-            <div style="color: #555; text-align: center; margin: auto;">Loading...</div>
+            <div style="color: #fff; text-align: center; margin: auto;">Loading...</div>
          </div>
       </div>
 
-      <!-- 2x2 Grid -->
+      <!-- 2x2 Grid directly below history, reachable perfectly by thumb -->
       <div class="grid-2x2">
         <button class="btn btn-green" id="btn-walk"><span class="green-dog">🐕</span></button>
         <button class="btn btn-brown" id="btn-poop">💩</button>
         <button class="btn btn-yellow" id="btn-custody">👤</button>
         <button class="btn btn-blue" id="btn-puddle">💦</button>
       </div>
+      
+      <!-- Empty space at the bottom (pushes buttons up, reserved for future pictures/functions) -->
+      <div style="flex-grow: 1; min-height: 20px;"></div>
     </div>
   </div>
 
   <!-- PASSPORT TAB -->
   <div id="health" class="tab-content" style="overflow-y: auto;">
-    <h2 id="passport-title" style="font-size: 28px; color: #4CAF50; margin: 10px 0; text-align:center;">Micka</h2>
+    <h2 id="passport-title" style="font-size: 32px; color: #4CAF50; margin: 15px 0; text-align:center;">Micka</h2>
     <div id="passport-container">Loading...</div>
+    <button class="change-user-btn" onclick="triggerChangeUser()">Change User</button>
   </div>
 
   <!-- EVENTS TAB -->
@@ -135,7 +171,6 @@
     
     // ========================================================================
 
-    // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
@@ -172,21 +207,45 @@
       t.style.opacity = '1';
       setTimeout(() => t.style.opacity = '0', 2500);
     }
-    
-    function formatTime(dateStr) {
-      const d = new Date(dateStr);
-      const now = new Date();
-      const time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
-      const isToday = d.toDateString() === now.toDateString();
-      const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
-      const isYesterday = d.toDateString() === yesterday.toDateString();
 
-      if (isToday) return `<span style="visibility: hidden;">◀</span> ${time}`;
-      if (isYesterday) return `◀ ${time}`;
-      return `${time}`;
+    let confirmCallback = null;
+    function showCustomConfirm(msg, onYes) {
+        document.getElementById('confirm-msg').innerText = msg;
+        document.getElementById('confirm-modal').style.display = 'flex';
+        confirmCallback = onYes;
+    }
+    function closeConfirm(isYes) {
+        document.getElementById('confirm-modal').style.display = 'none';
+        if (isYes && confirmCallback) confirmCallback();
+        confirmCallback = null;
     }
 
-    // Advanced Touch Interaction Logic (20px Tolerance Slop)
+    function triggerChangeUser() {
+        localStorage.removeItem('micka_walker');
+        currentUser = null;
+        location.reload(); // Refresh to trigger the fetch and show the onboarding screen properly
+    }
+
+    function setUser(name) {
+      if(!name) return;
+      currentUser = name;
+      localStorage.setItem('micka_walker', currentUser);
+      document.getElementById('onboarding-modal').style.display = 'none';
+    }
+
+    async function saveNewUser() {
+      const name = document.getElementById('ob-new-name').value.trim();
+      if (!name) return;
+      
+      setUser(name);
+      
+      // Async save to sheet so they become a button for the next person
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'newUser', newName: name })
+      });
+    }
+    
     function setupTouch(el, onShort, onLong) {
       let timer; let isLong = false;
       let startX, startY;
@@ -200,7 +259,7 @@
             isLong = true;
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
             if (onLong) onLong();
-         }, 600);
+         }, 600); // 600ms long press
       };
 
       const move = (e) => {
@@ -228,6 +287,8 @@
     }
 
     const askNote = (type, poop, puddle) => {
+      // Using prompt here is allowed if requested, but better to use custom if needed. 
+      // Keeping browser prompt for note text entry as standard behavior per previous requests.
       let note = prompt("Enter note (blood, diarrhea, etc.):");
       if (note !== null) logWalk(poop, puddle, type, note);
     };
@@ -236,61 +297,56 @@
     setupTouch(document.getElementById('btn-poop'), () => logWalk(true, false, 'Action', ""), () => askNote('Action', true, false));
     setupTouch(document.getElementById('btn-puddle'), () => logWalk(false, true, 'Action', ""), () => askNote('Action', false, true));
     
-    // Custody Button Logic (Long Press Only for Safety, Short Tap shows reminder)
     let isCurrentlyCustodian = false;
     setupTouch(document.getElementById('btn-custody'), 
-      () => showToast("Hold to take custody"), 
-      () => logWalk(false, false, isCurrentlyCustodian ? 'Returned' : 'Custody', "")
+      () => showToast("Hold to change custody"), 
+      () => {
+         showCustomConfirm(
+             isCurrentlyCustodian ? "Return custody of Micka?" : "Take custody of Micka?", 
+             () => logWalk(false, false, isCurrentlyCustodian ? 'Returned' : 'Custody', "")
+         );
+      }
     );
 
     // History Window Overlay & Swipe to Undo Logic
+    const touchZone = document.getElementById('history-touch-zone');
     const container = document.getElementById('history-container');
-    let isOverlayActive = false;
+    let isExpanded = false;
     
     function isAtBottom() {
       // Check if we are within 5px of the absolute bottom
       return Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) <= 5;
     }
 
-    setupTouch(container, null, () => {
-       if (!isAtBottom() && !isOverlayActive) {
-          container.scrollTop = container.scrollHeight; // Snap to bottom
-       } else {
-          isOverlayActive = !isOverlayActive;
-          container.classList.toggle('overlay-mode', isOverlayActive);
-          if (isOverlayActive) container.scrollTop = container.scrollHeight;
-       }
+    setupTouch(touchZone, null, () => {
+       isExpanded = !isExpanded;
+       container.classList.toggle('expanded', isExpanded);
+       // Ensure scroll stays at bottom so newest walk remains visible
+       setTimeout(() => { container.scrollTop = container.scrollHeight; }, 10);
     });
 
     let touchX = 0;
     container.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; }, {passive: true});
     container.addEventListener('touchend', e => {
-      // GATEKEEPER: Overlay must be off AND scroll must be at absolute bottom
-      if (!isOverlayActive && isAtBottom()) {
+      // GATEKEEPER: Must not be expanded AND scroll must be at absolute bottom
+      if (!isExpanded && isAtBottom()) {
          if (touchX - e.changedTouches[0].screenX > 60) {
             requestUndo();
          }
       }
     }, {passive: true});
 
-    function setUser(name) {
-      if(!name) return;
-      currentUser = name;
-      localStorage.setItem('micka_walker', currentUser);
-      document.getElementById('onboarding-modal').style.display = 'none';
-    }
+    function formatTime(dateStr) {
+      const d = new Date(dateStr);
+      const now = new Date();
+      const time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+      const isToday = d.toDateString() === now.toDateString();
+      const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+      const isYesterday = d.toDateString() === yesterday.toDateString();
 
-    async function saveNewUser() {
-      const name = document.getElementById('ob-new-name').value.trim();
-      if (!name) return;
-      
-      setUser(name);
-      
-      // Async save to sheet so they become a button for the next person
-      fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'newUser', newName: name })
-      });
+      if (isToday) return `<span style="visibility: hidden;">◀</span> ${time}`;
+      if (isYesterday) return `◀ ${time}`;
+      return `${time}`;
     }
 
     async function fetchData() {
@@ -301,6 +357,7 @@
         // 0. Handle Onboarding
         if (!currentUser) {
             const obList = document.getElementById('ob-user-list');
+            obList.innerHTML = '';
             data.users.forEach(user => {
                const btn = document.createElement('button');
                btn.className = 'ob-btn';
@@ -366,7 +423,7 @@
                if (log.type === 'Long Walk') icons += '<span class="green-dog">🐕</span> ';
                if (log.poop) icons += '💩 ';
                if (log.puddle) icons += '💦 ';
-               if (log.note) icons += `<span class="red-note" onclick="alert('${log.note}')">❗</span>`;
+               if (log.note) icons += `<span class="red-note" onclick="alert('${log.note.replace(/'/g, "\\'")}')">❗</span>`;
            }
            
            let idTag = (index === mergedLogs.length - 1) ? 'id="latest-row"' : '';
@@ -382,13 +439,15 @@
         });
         
         container.innerHTML = html;
-        container.scrollTop = container.scrollHeight;
+        // Snap to bottom on load
+        setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
 
         // 4. Render Passport
         let passHtml = '';
         data.dogInfo.forEach(info => {
             if (info.label.toLowerCase() === 'name') {
                 document.getElementById('passport-title').innerText = info.value;
+                document.getElementById('main-dog-name').innerText = info.value;
             } else {
                 passHtml += `<div class="list-row"><span class="list-label">${info.label}</span><span class="list-val">${info.value}</span></div>`;
             }
@@ -425,7 +484,7 @@
         if (hasWarning) document.getElementById('event-warning').style.display = 'inline';
         
       } catch (e) {
-        container.innerHTML = '<div style="color:red; text-align:center;">Network Error</div>';
+        container.innerHTML = '<div style="color:red; text-align:center; padding: 20px;">Network Error - Check URL</div>';
       }
     }
 
@@ -433,6 +492,8 @@
       if (!currentUser) return;
       if (navigator.vibrate) navigator.vibrate(50);
       showToast("Saving...");
+      
+      // Optimistic update omitted here to rely strictly on server truth.
       await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({ poop, puddle, type, who: currentUser, note: note })
@@ -446,17 +507,22 @@
       if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
       showToast("Deleting...");
 
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'undo' })
-      });
-      const result = await res.json();
-      
-      if (result.status === 'success') {
-          location.reload();
-      } else {
+      try {
+          const res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'undo' })
+          });
+          const result = await res.json();
+          
+          if (result.status === 'success') {
+              location.reload();
+          } else {
+              if (lastRow) lastRow.classList.remove('deleting');
+              showToast("Too late to delete!");
+          }
+      } catch(e) {
           if (lastRow) lastRow.classList.remove('deleting');
-          showToast("Too late to delete!");
+          showToast("Network Error during delete");
       }
     }
 
