@@ -7,19 +7,20 @@
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#121212">
   <style>
     :root { --bg: #121212; --text: #ffffff; --muted: #888; --border: #333;}
     body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); user-select: none; -webkit-user-select: none; height: 100vh; overflow: hidden; display: flex; flex-direction: column;}
     
     /* Install Banner */
-    #install-banner { display: none; background: #D32F2F; color: white; padding: 12px; text-align: center; font-weight: bold; cursor: pointer; }
+    #install-banner { display: none; background: #D32F2F; color: white; padding: 12px; text-align: center; font-weight: bold; cursor: pointer; z-index: 99999; }
 
-    /* Navigation */
+    /* Navigation (3-Tab Layout) */
     .nav { display: flex; padding: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;}
-    .nav-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--muted); font-size: 16px; font-weight: bold; cursor: pointer; position: relative;}
+    .nav-btn { flex: 1; padding: 10px 5px; background: none; border: none; color: var(--muted); font-size: 16px; font-weight: bold; cursor: pointer; position: relative;}
     .nav-btn.active { color: var(--text); border-bottom: 2px solid #4CAF50; }
-    .warning-badge { position: absolute; top: 0; right: 10px; color: #F44336; font-weight: bold; font-size: 18px; }
+    .warning-badge { position: absolute; top: 0; right: 5px; color: #F44336; font-weight: bold; font-size: 20px; }
 
     /* Tab Containers */
     .tab-content { flex-grow: 1; padding: 0 15px; display: none; flex-direction: column; overflow: hidden;}
@@ -27,13 +28,13 @@
 
     /* Walks Layout */
     .history-wrapper { flex-grow: 1; position: relative; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 15px; }
-    .history-window { overflow-y: auto; display: flex; flex-direction: column; max-height: calc(3 * 42px); padding-bottom: 5px; transition: max-height 0.2s ease-out; }
+    .history-window { overflow-y: auto; display: flex; flex-direction: column; max-height: calc(3 * 45px); padding-bottom: 5px; transition: max-height 0.2s ease-out; scroll-behavior: smooth;}
     
     /* Z-Index Overlay Mode */
-    .history-window.overlay-mode { position: absolute; bottom: 0; left: 0; width: 100%; max-height: 50vh; background: rgba(18,18,18,0.95); box-shadow: 0 -10px 20px rgba(0,0,0,0.8); z-index: 10; border-top: 1px solid #333; padding-top: 10px;}
+    .history-window.overlay-mode { position: absolute; bottom: 0; left: 0; width: 100%; max-height: 50vh; background: rgba(18,18,18,0.98); box-shadow: 0 -10px 20px rgba(0,0,0,0.8); z-index: 10; border-top: 1px solid #333; padding-top: 10px;}
     
-    .history-line { display: flex; justify-content: space-between; align-items: center; font-size: 20px; padding: 8px 0; border-bottom: 1px solid #222; transition: opacity 0.3s, transform 0.3s;}
-    .history-line.deleting { opacity: 0; transform: translateX(-50px); }
+    .history-line { display: flex; justify-content: space-between; align-items: center; font-size: 20px; padding: 10px 0; border-bottom: 1px solid #222; transition: opacity 0.2s, transform 0.2s;}
+    .history-line.deleting { opacity: 0.3; transform: translateX(-40px); }
     .history-line:last-child { border-bottom: none; }
     
     /* Typography */
@@ -41,11 +42,11 @@
     .hl-time { color: var(--muted); font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .hl-dash { color: #555; }
     .hl-person { font-weight: bold; color: white; }
-    .hl-icons { font-size: 24px; letter-spacing: 2px; }
+    .hl-icons { font-size: 24px; letter-spacing: 2px; text-align: right; min-width: 60px;}
     .green-dog { display: inline-block; color: transparent; text-shadow: 0 0 0 #4CAF50; }
     .red-note { color: #F44336; font-weight: bold; font-size: 18px; margin-left: 5px; cursor: pointer; }
 
-    /* 2x2 Grid */
+    /* 2x2 Grid with Touch-Action none to prevent Chrome interception */
     .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-bottom: 20px; flex-shrink: 0; }
     .btn { touch-action: none; padding: 35px 0; font-size: 50px; border: none; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; justify-content: center; align-items: center; }
     .btn:active { opacity: 0.6; }
@@ -55,22 +56,37 @@
     .btn-yellow { background: #F57F17; }
     .btn-blue { background: #0D47A1; }
 
-    /* Locks & Toasts */
+    /* Locks, Modals & Toasts */
     .custody-lock { display: none; flex-grow: 1; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; letter-spacing: 2px; color: #F57F17;}
     #toast { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none;}
+    
+    #onboarding-modal { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;}
+    .ob-btn { background: #333; color: white; border: 1px solid #555; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin: 5px; cursor: pointer;}
+    .ob-input { background: #222; color: white; border: 1px solid #555; padding: 15px; font-size: 18px; border-radius: 12px; margin-top: 15px; width: 80%; max-width: 300px; outline:none;}
+    .ob-save { background: #4CAF50; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin-top: 10px; cursor: pointer; width: 80%; max-width: 300px;}
 
-    /* List Tabs */
+    /* List Tabs (Passport & Events) */
     .list-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; font-size: 16px;}
     .list-label { font-weight: bold; color: #aaa; }
     .list-val { text-align: right; }
     .category-header { color: #4CAF50; font-weight: bold; margin-top: 15px; padding-bottom: 5px; border-bottom: 1px solid #4CAF50;}
     .warn-text { color: #F44336; font-weight: bold; }
+    .warn-bg { background: rgba(244, 67, 54, 0.1); border-radius: 8px; padding: 0 5px;}
   </style>
 </head>
 <body>
 
   <div id="install-banner">📲 Tap here to Install App to Home Screen</div>
   <div id="toast">Message</div>
+
+  <!-- Onboarding Modal -->
+  <div id="onboarding-modal">
+    <h2 style="margin-bottom: 20px;">Who is walking Micka?</h2>
+    <div id="ob-user-list" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"></div>
+    <div style="margin-top: 30px; color: var(--muted);">Or enter a new name:</div>
+    <input type="text" id="ob-new-name" class="ob-input" placeholder="Your name...">
+    <button class="ob-save" onclick="saveNewUser()">Save</button>
+  </div>
 
   <div class="nav">
     <button class="nav-btn active" onclick="switchTab('logs', this)">Walks</button>
@@ -89,6 +105,7 @@
          </div>
       </div>
 
+      <!-- 2x2 Grid -->
       <div class="grid-2x2">
         <button class="btn btn-green" id="btn-walk"><span class="green-dog">🐕</span></button>
         <button class="btn btn-brown" id="btn-poop">💩</button>
@@ -100,7 +117,7 @@
 
   <!-- PASSPORT TAB -->
   <div id="health" class="tab-content" style="overflow-y: auto;">
-    <h2 id="passport-title" style="font-size: 28px; color: #4CAF50; margin: 10px 0;">Micka</h2>
+    <h2 id="passport-title" style="font-size: 28px; color: #4CAF50; margin: 10px 0; text-align:center;">Micka</h2>
     <div id="passport-container">Loading...</div>
   </div>
 
@@ -111,13 +128,11 @@
 
   <script>
     // ========================================================================
-    // ⬇️ ⬇️ ⬇️ DO NOT DELETE - THIS IS YOUR GOOGLE SCRIPT CONNECTION ⬇️ ⬇️ ⬇️
+    // ⬇️ ⬇️ ⬇️ REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL ⬇️ ⬇️ ⬇️
     // ========================================================================
     
-    const API_URL = "https://script.google.com/macros/s/AKfycbztcNVrhlPGlUpgYSAE0KeawJnzQA_jG8LmwNLZzJXgpXw61pocjGqMKKB3MSX2PP5L/exec";
+    const API_URL = "YOUR_NEW_WEB_APP_URL_HERE";
     
-    // ========================================================================
-    // ⬆️ ⬆️ ⬆️ YOUR GOOGLE SCRIPT URL ENDS HERE ⬆️ ⬆️ ⬆️
     // ========================================================================
 
     // Register Service Worker for PWA
@@ -125,7 +140,6 @@
       navigator.serviceWorker.register('sw.js');
     }
 
-    // Handle Custom Install Banner
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -142,11 +156,7 @@
       }
     });
 
-    // App Initialization
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentUser = urlParams.get('user') || localStorage.getItem('micka_walker') || "Someone";
-    localStorage.setItem('micka_walker', currentUser);
-    
+    let currentUser = localStorage.getItem('micka_walker');
     window.oncontextmenu = function(event) { event.preventDefault(); event.stopPropagation(); return false; };
 
     function switchTab(tabId, btn) {
@@ -167,18 +177,16 @@
       const d = new Date(dateStr);
       const now = new Date();
       const time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
-      
       const isToday = d.toDateString() === now.toDateString();
       const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
       const isYesterday = d.toDateString() === yesterday.toDateString();
 
-      // Tabular alignment via hidden character
       if (isToday) return `<span style="visibility: hidden;">◀</span> ${time}`;
       if (isYesterday) return `◀ ${time}`;
       return `${time}`;
     }
 
-    // Touch Interaction Logic (20px Tolerance)
+    // Advanced Touch Interaction Logic (20px Tolerance Slop)
     function setupTouch(el, onShort, onLong) {
       let timer; let isLong = false;
       let startX, startY;
@@ -191,7 +199,7 @@
          timer = setTimeout(() => {
             isLong = true;
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-            onLong();
+            if (onLong) onLong();
          }, 600);
       };
 
@@ -199,7 +207,7 @@
          if (!timer) return;
          let currentX = e.touches ? e.touches[0].clientX : e.clientX;
          let currentY = e.touches ? e.touches[0].clientY : e.clientY;
-         // Cancel if finger moves more than 20px
+         // Strict 20px slop boundary: cancel timer if finger drifts
          if (Math.abs(currentX - startX) > 20 || Math.abs(currentY - startY) > 20) {
             clearTimeout(timer); timer = null;
          }
@@ -219,7 +227,6 @@
       el.addEventListener('mouseleave', () => { if (timer) clearTimeout(timer); });
     }
 
-    // Assign Button Actions
     const askNote = (type, poop, puddle) => {
       let note = prompt("Enter note (blood, diarrhea, etc.):");
       if (note !== null) logWalk(poop, puddle, type, note);
@@ -229,14 +236,14 @@
     setupTouch(document.getElementById('btn-poop'), () => logWalk(true, false, 'Action', ""), () => askNote('Action', true, false));
     setupTouch(document.getElementById('btn-puddle'), () => logWalk(false, true, 'Action', ""), () => askNote('Action', false, true));
     
-    // Custody Button Logic (Long Press Only, Short Tap Does Nothing)
+    // Custody Button Logic (Long Press Only for Safety, Short Tap shows reminder)
     let isCurrentlyCustodian = false;
     setupTouch(document.getElementById('btn-custody'), 
       () => showToast("Hold to take custody"), 
       () => logWalk(false, false, isCurrentlyCustodian ? 'Returned' : 'Custody', "")
     );
 
-    // History Window Overlay Toggle Logic
+    // History Window Overlay & Swipe to Undo Logic
     const container = document.getElementById('history-container');
     let isOverlayActive = false;
     
@@ -247,21 +254,18 @@
 
     setupTouch(container, null, () => {
        if (!isAtBottom() && !isOverlayActive) {
-          // Snap to bottom if viewing history inline
-          container.scrollTop = container.scrollHeight; 
+          container.scrollTop = container.scrollHeight; // Snap to bottom
        } else {
-          // Toggle Overlay Mode
           isOverlayActive = !isOverlayActive;
           container.classList.toggle('overlay-mode', isOverlayActive);
           if (isOverlayActive) container.scrollTop = container.scrollHeight;
        }
     });
 
-    // Swipe to Undo Logic
     let touchX = 0;
     container.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; }, {passive: true});
     container.addEventListener('touchend', e => {
-      // STRICT GATEKEEPER: Overlay must be off AND scroll must be at absolute bottom
+      // GATEKEEPER: Overlay must be off AND scroll must be at absolute bottom
       if (!isOverlayActive && isAtBottom()) {
          if (touchX - e.changedTouches[0].screenX > 60) {
             requestUndo();
@@ -269,12 +273,45 @@
       }
     }, {passive: true});
 
+    function setUser(name) {
+      if(!name) return;
+      currentUser = name;
+      localStorage.setItem('micka_walker', currentUser);
+      document.getElementById('onboarding-modal').style.display = 'none';
+    }
+
+    async function saveNewUser() {
+      const name = document.getElementById('ob-new-name').value.trim();
+      if (!name) return;
+      
+      setUser(name);
+      
+      // Async save to sheet so they become a button for the next person
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'newUser', newName: name })
+      });
+    }
+
     async function fetchData() {
       try {
         const response = await fetch(API_URL);
         const data = await response.json(); 
         
-        // 1. Custody State Check
+        // 0. Handle Onboarding
+        if (!currentUser) {
+            const obList = document.getElementById('ob-user-list');
+            data.users.forEach(user => {
+               const btn = document.createElement('button');
+               btn.className = 'ob-btn';
+               btn.innerText = user;
+               btn.onclick = () => setUser(user);
+               obList.appendChild(btn);
+            });
+            document.getElementById('onboarding-modal').style.display = 'flex';
+        }
+
+        // 1. Custody State
         const isAway = data.status.type === 'Custody';
         const lockScreen = document.getElementById('custody-lock');
         const activeUI = document.getElementById('active-interface');
@@ -332,9 +369,7 @@
                if (log.note) icons += `<span class="red-note" onclick="alert('${log.note}')">❗</span>`;
            }
            
-           // Tag the very last row so we can animate it on undo
            let idTag = (index === mergedLogs.length - 1) ? 'id="latest-row"' : '';
-
            html += `
              <div class="history-line" ${idTag}>
                <div class="hl-left">
@@ -365,7 +400,6 @@
         let hasWarning = false;
         let categories = {};
         
-        // Group by category
         data.events.forEach(ev => {
             if (!categories[ev.category]) categories[ev.category] = [];
             categories[ev.category].push(ev);
@@ -376,9 +410,15 @@
             evHtml += `<div class="category-header">${cat}</div>`;
             items.forEach(item => {
                 let warnClass = item.warning ? "warn-text" : "";
+                let bgClass = item.warning ? "warn-bg" : "";
+                
                 let d = new Date(item.date);
-                let valStr = !isNaN(d) ? `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}` : item.date;
-                evHtml += `<div class="list-row"><span class="list-label ${warnClass}">${item.item}</span><span class="list-val ${warnClass}">${valStr}</span></div>`;
+                let valStr = !isNaN(d.getTime()) ? `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}` : item.date;
+                
+                evHtml += `<div class="list-row ${bgClass}">
+                            <span class="list-label ${warnClass}">${item.item}</span>
+                            <span class="list-val ${warnClass}">${valStr}</span>
+                           </div>`;
             });
         }
         document.getElementById('events-container').innerHTML = evHtml;
@@ -390,6 +430,7 @@
     }
 
     async function logWalk(poop, puddle, type, note) {
+      if (!currentUser) return;
       if (navigator.vibrate) navigator.vibrate(50);
       showToast("Saving...");
       await fetch(API_URL, {
@@ -400,7 +441,6 @@
     }
     
     async function requestUndo() {
-      // Optimistic UI: Instantly hide the row and show toast
       const lastRow = document.getElementById('latest-row');
       if (lastRow) lastRow.classList.add('deleting');
       if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
@@ -415,7 +455,7 @@
       if (result.status === 'success') {
           location.reload();
       } else {
-          if (lastRow) lastRow.classList.remove('deleting'); // Bring it back
+          if (lastRow) lastRow.classList.remove('deleting');
           showToast("Too late to delete!");
       }
     }
