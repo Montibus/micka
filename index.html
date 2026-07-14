@@ -11,7 +11,6 @@
   <meta name="theme-color" content="#121212">
   <style>
     :root { --bg: #121212; --text: #ffffff; --muted: #888; --border: #333;}
-    /* Using 100dvh prevents mobile address bars from hiding the bottom buttons */
     body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); user-select: none; -webkit-user-select: none; height: 100dvh; overflow: hidden; display: flex; flex-direction: column;}
     
     #install-banner { display: none; background: #D32F2F; color: white; padding: 12px; text-align: center; font-weight: bold; cursor: pointer; z-index: 99999; flex-shrink: 0;}
@@ -24,32 +23,32 @@
     .tab-content { flex-grow: 1; padding: 0 15px; display: none; flex-direction: column; overflow-y: auto;}
     .tab-content.active { display: flex; }
 
-    /* Walks Layout - Top-aligned, grid sits under history */
     #logs { justify-content: flex-start; padding: 0 15px; }
-    
-    .main-dog-title { text-align: center; font-size: 36px; font-weight: bold; color: #4CAF50; margin: 10px 0 5px 0; }
+    .main-dog-title { text-align: center; font-size: 36px; font-weight: bold; color: #4CAF50; margin: 5px 0; flex-shrink: 0;}
 
-    .history-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 15px; border-radius: 12px; }
-
-    .history-window { overflow-y: hidden; display: flex; flex-direction: column; max-height: 140px; padding-bottom: 5px; transition: max-height 0.3s ease-out; scroll-behavior: smooth;}
+    .history-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 10px; border-radius: 12px; flex-shrink: 0;}
     
-    /* Expanded Mode - Simply grows downward naturally */
-    .history-window.expanded { max-height: 60vh; overflow-y: auto; }
+    /* Base history: 3 lines visible */
+    .history-window { overflow-y: hidden; display: flex; flex-direction: column; max-height: 155px; transition: max-height 0.3s ease-out; scroll-behavior: smooth;}
     
-    .history-line { display: flex; justify-content: space-between; align-items: center; font-size: 24px; padding: 8px 0; border-bottom: 1px solid #333; transition: opacity 0.2s, transform 0.2s;}
+    /* Inspector Mode (Expanded): Takes over remaining height, scrollable */
+    .history-window.expanded { max-height: none; flex-grow: 1; overflow-y: auto; padding-bottom: 20px;}
+    
+    /* Enhanced outdoor readability for history */
+    .history-line { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #333; transition: opacity 0.2s, transform 0.2s;}
     .history-line.deleting { opacity: 0.3; transform: translateX(-40px); }
     .history-line:last-child { border-bottom: none; }
     
     .hl-left { display: flex; align-items: center; gap: 10px; }
-    .hl-time { color: #FFEB3B; font-size: 24px; font-weight: bold; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .hl-time { color: #FFEB3B; font-size: 28px; font-weight: bold; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .hl-dash { color: #FFFFFF; font-weight: bold; }
-    .hl-person { font-weight: bold; color: #FFFFFF; font-size: 24px;}
-    .hl-icons { font-size: 24px; letter-spacing: 2px; text-align: right; min-width: 60px;}
+    .hl-person { font-weight: bold; color: #FFFFFF; font-size: 28px;}
+    .hl-icons { font-size: 28px; letter-spacing: 2px; text-align: right; min-width: 60px;}
     .green-dog { display: inline-block; color: transparent; text-shadow: 0 0 0 #4CAF50; }
-    .red-note { color: #F44336; font-weight: bold; font-size: 18px; margin-left: 5px; cursor: pointer; }
+    .red-note { color: #F44336; font-weight: bold; font-size: 22px; margin-left: 5px; cursor: pointer; }
 
-    .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-shrink: 0; }
-    .btn { touch-action: none; padding: 35px 0; font-size: 50px; border: none; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-shrink: 0; margin-top: auto; padding-bottom: 25px;}
+    .btn { touch-action: none; padding: 35px 0; font-size: 55px; border: none; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     .btn:active { opacity: 0.6; transform: scale(0.98); }
     
     .btn-green { background: #1B5E20; }
@@ -59,12 +58,10 @@
 
     .custody-lock { display: none; flex-grow: 1; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; letter-spacing: 2px; color: #F57F17;}
     
-    /* Modals & Toasts */
     #toast { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; font-size: 15px; font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
     
     .modal-backdrop { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px);}
     
-    /* Custom Confirm Box */
     .confirm-box { background: #222; padding: 25px; border-radius: 16px; text-align: center; width: 85%; max-width: 320px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     .confirm-msg { font-size: 20px; font-weight: bold; margin-bottom: 25px; }
     .confirm-row { display: flex; gap: 15px; justify-content: space-between; }
@@ -72,12 +69,10 @@
     .btn-yes { background: #4CAF50; color: white; }
     .btn-no { background: #555; color: white; }
 
-    /* Onboarding Inputs */
     .ob-btn { background: #333; color: white; border: 1px solid #555; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin: 5px; cursor: pointer;}
-    .ob-input { background: #222; color: white; border: 1px solid #555; padding: 15px; font-size: 18px; border-radius: 12px; margin-top: 15px; width: 100%; box-sizing: border-box; outline:none;}
+    .ob-input { background: #222; color: white; border: 1px solid #555; padding: 15px; font-size: 18px; border-radius: 12px; margin-top: 15px; width: 100%; box-sizing: border-box; outline:none; color-scheme: dark;}
     .ob-save { background: #4CAF50; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin-top: 15px; cursor: pointer; width: 100%;}
     
-    /* Passport & Events */
     .list-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; font-size: 16px;}
     .list-label { font-weight: bold; color: #aaa; }
     .list-val { text-align: right; }
@@ -103,7 +98,21 @@
     </div>
   </div>
 
-  <!-- Custom Confirmation Modal (Replaces browser confirm()) -->
+  <!-- Post-Factum Time Picker Modal -->
+  <div id="pf-modal" class="modal-backdrop">
+    <div class="confirm-box">
+      <h3 style="margin-top:0; color:#4CAF50;">Log Past Event</h3>
+      <div id="pf-type-label" style="margin-bottom: 15px; font-weight:bold; font-size:24px;"></div>
+      <input type="datetime-local" id="pf-time" class="ob-input">
+      <input type="text" id="pf-note" class="ob-input" placeholder="Optional note...">
+      <div class="confirm-row" style="margin-top: 20px;">
+        <button class="confirm-btn btn-no" onclick="closePF()">Cancel</button>
+        <button class="confirm-btn btn-yes" onclick="savePF()">Save Log</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Confirmation Modal -->
   <div id="confirm-modal" class="modal-backdrop">
     <div class="confirm-box">
       <div id="confirm-msg" class="confirm-msg">Are you sure?</div>
@@ -114,7 +123,6 @@
     </div>
   </div>
 
-  <!-- Nav -->
   <div class="nav">
     <button class="nav-btn active" onclick="switchTab('logs', this)">Walks</button>
     <button class="nav-btn" onclick="switchTab('health', this)">Passport</button>
@@ -126,27 +134,22 @@
     <div id="custody-lock" class="custody-lock"></div>
 
     <div id="active-interface" style="display: flex; flex-direction: column; height: 100%;">
-      
-      <!-- Dog Name at the top -->
       <div id="main-dog-name" class="main-dog-title">Micka</div>
 
-      <!-- History directly below name, expands downwards on long-press -->
+      <!-- History & Inspector Window -->
       <div class="history-wrapper" id="history-touch-zone">
          <div class="history-window" id="history-container">
             <div style="color: #fff; text-align: center; margin: auto;">Loading...</div>
          </div>
       </div>
 
-      <!-- 2x2 Grid directly below history, reachable perfectly by thumb -->
-      <div class="grid-2x2">
+      <!-- Action Buttons Grid -->
+      <div class="grid-2x2" id="action-buttons-grid">
         <button class="btn btn-green" id="btn-walk"><span class="green-dog">🐕</span></button>
         <button class="btn btn-brown" id="btn-poop">💩</button>
         <button class="btn btn-yellow" id="btn-custody">👤</button>
         <button class="btn btn-blue" id="btn-puddle">💦</button>
       </div>
-      
-      <!-- Empty space at the bottom (pushes buttons up, reserved for future pictures/functions) -->
-      <div style="flex-grow: 1; min-height: 20px;"></div>
     </div>
   </div>
 
@@ -154,7 +157,8 @@
   <div id="health" class="tab-content" style="overflow-y: auto;">
     <h2 id="passport-title" style="font-size: 32px; color: #4CAF50; margin: 15px 0; text-align:center;">Micka</h2>
     <div id="passport-container">Loading...</div>
-    <button class="change-user-btn" onclick="triggerChangeUser()">Change User</button>
+    <!-- Change User Button to fix phone caching issues -->
+    <button class="change-user-btn" onclick="triggerChangeUser()">Change User / Fix Name</button>
   </div>
 
   <!-- EVENTS TAB -->
@@ -167,13 +171,11 @@
     // ⬇️ ⬇️ ⬇️ REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL ⬇️ ⬇️ ⬇️
     // ========================================================================
     
-    const API_URL = "https://script.google.com/macros/s/AKfycbynamBCmDNGJSQXYESEXpv7XQV27EBtfWg_sDBaiPoHPLM8_v0O3UOravnb42c27nc4/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyh-ivXhUb2FZB9F7URsOAdIUYiTOQxU30sIsCAvdyO-4doC1uokSnFTd6cKbPClW69/exec";
     
     // ========================================================================
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -181,7 +183,6 @@
       deferredPrompt = e;
       document.getElementById('install-banner').style.display = 'block';
     });
-
     document.getElementById('install-banner').addEventListener('click', async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
@@ -220,10 +221,41 @@
         confirmCallback = null;
     }
 
+    let pfParams = {};
+    function openPF(type, poop, puddle) {
+        pfParams = { type, poop, puddle };
+        document.getElementById('pf-type-label').innerText = type + (poop ? " 💩" : "") + (puddle ? " 💦" : "");
+        
+        // Setup local datetime string format exactly as browser requires (YYYY-MM-DDThh:mm)
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('pf-time').value = now.toISOString().slice(0, 16);
+        document.getElementById('pf-note').value = "";
+        
+        document.getElementById('pf-modal').style.display = 'flex';
+    }
+
+    function closePF() {
+        document.getElementById('pf-modal').style.display = 'none';
+    }
+
+    function savePF() {
+        const timeVal = document.getElementById('pf-time').value;
+        const noteVal = document.getElementById('pf-note').value;
+        if(!timeVal) {
+            showToast("Time is required");
+            return;
+        }
+        // Convert back to standard ISO for the backend script
+        const customTime = new Date(timeVal).toISOString(); 
+        closePF();
+        logWalk(pfParams.poop, pfParams.puddle, pfParams.type, noteVal, customTime);
+    }
+
     function triggerChangeUser() {
         localStorage.removeItem('micka_walker');
         currentUser = null;
-        location.reload(); // Refresh to trigger the fetch and show the onboarding screen properly
+        location.reload(); 
     }
 
     function setUser(name) {
@@ -236,45 +268,53 @@
     async function saveNewUser() {
       const name = document.getElementById('ob-new-name').value.trim();
       if (!name) return;
-      
       setUser(name);
-      
-      // Async save to sheet so they become a button for the next person
       fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({ action: 'newUser', newName: name })
       });
     }
     
-    function setupTouch(el, onShort, onLong) {
+    function setupTouch(el, onShort, onLong, onSwipeUp) {
       let timer; let isLong = false;
-      let startX, startY;
+      let startX, startY, currentX, currentY;
       
       const start = (e) => {
          isLong = false;
          startX = e.touches ? e.touches[0].clientX : e.clientX;
          startY = e.touches ? e.touches[0].clientY : e.clientY;
+         currentX = startX; currentY = startY;
          
          timer = setTimeout(() => {
             isLong = true;
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
             if (onLong) onLong();
-         }, 600); // 600ms long press
+         }, 600); 
       };
 
       const move = (e) => {
-         if (!timer) return;
-         let currentX = e.touches ? e.touches[0].clientX : e.clientX;
-         let currentY = e.touches ? e.touches[0].clientY : e.clientY;
-         // Strict 20px slop boundary: cancel timer if finger drifts
+         currentX = e.touches ? e.touches[0].clientX : e.clientX;
+         currentY = e.touches ? e.touches[0].clientY : e.clientY;
+         // Cancel long press timer if finger wanders too far
          if (Math.abs(currentX - startX) > 20 || Math.abs(currentY - startY) > 20) {
-            clearTimeout(timer); timer = null;
+            if (timer) { clearTimeout(timer); timer = null; }
          }
       };
       
       const end = (e) => {
-         if (timer) clearTimeout(timer);
-         if (!isLong && onShort) onShort();
+         if (timer) { clearTimeout(timer); timer = null; }
+         
+         // Only evaluate short-tap or swipe if a long-press hasn't already fired
+         if (!isLong) {
+             // Detect Swipe Up (Negative Y movement > 40px, straight up)
+             if (startY - currentY > 40 && Math.abs(currentX - startX) < 50) {
+                 if (onSwipeUp) onSwipeUp();
+             } 
+             // Detect normal short tap (minimal movement)
+             else if (Math.abs(currentX - startX) <= 20 && Math.abs(currentY - startY) <= 20) {
+                 if (onShort) onShort();
+             }
+         }
       };
       
       el.addEventListener('touchstart', start, {passive: true});
@@ -283,19 +323,27 @@
       el.addEventListener('mousedown', start);
       el.addEventListener('mousemove', move);
       el.addEventListener('mouseup', end);
-      el.addEventListener('mouseleave', () => { if (timer) clearTimeout(timer); });
+      el.addEventListener('mouseleave', () => { if (timer) { clearTimeout(timer); timer = null; } });
     }
 
-    const askNote = (type, poop, puddle) => {
-      // Using prompt here is allowed if requested, but better to use custom if needed. 
-      // Keeping browser prompt for note text entry as standard behavior per previous requests.
-      let note = prompt("Enter note (blood, diarrhea, etc.):");
-      if (note !== null) logWalk(poop, puddle, type, note);
-    };
-
-    setupTouch(document.getElementById('btn-walk'), () => logWalk(false, false, 'Long Walk', ""), () => askNote('Long Walk', false, false));
-    setupTouch(document.getElementById('btn-poop'), () => logWalk(true, false, 'Action', ""), () => askNote('Action', true, false));
-    setupTouch(document.getElementById('btn-puddle'), () => logWalk(false, true, 'Action', ""), () => askNote('Action', false, true));
+    // Attach Swipe Up as the 4th parameter for Post-Factum logging
+    setupTouch(document.getElementById('btn-walk'), 
+      () => logWalk(false, false, 'Long Walk', ""), 
+      () => { let note = prompt("Enter note:"); if (note !== null) logWalk(false, false, 'Long Walk', note); },
+      () => openPF('Long Walk', false, false)
+    );
+    
+    setupTouch(document.getElementById('btn-poop'), 
+      () => logWalk(true, false, 'Action', ""), 
+      () => { let note = prompt("Enter note:"); if (note !== null) logWalk(true, false, 'Action', note); },
+      () => openPF('Action', true, false)
+    );
+    
+    setupTouch(document.getElementById('btn-puddle'), 
+      () => logWalk(false, true, 'Action', ""), 
+      () => { let note = prompt("Enter note:"); if (note !== null) logWalk(false, true, 'Action', note); },
+      () => openPF('Action', false, true)
+    );
     
     let isCurrentlyCustodian = false;
     setupTouch(document.getElementById('btn-custody'), 
@@ -306,22 +354,24 @@
              () => logWalk(false, false, isCurrentlyCustodian ? 'Returned' : 'Custody', "")
          );
       }
+      // No post-factum swipe needed for custody
     );
 
-    // History Window Overlay & Swipe to Undo Logic
     const touchZone = document.getElementById('history-touch-zone');
     const container = document.getElementById('history-container');
+    const buttonGrid = document.getElementById('action-buttons-grid');
     let isExpanded = false;
     
     function isAtBottom() {
-      // Check if we are within 5px of the absolute bottom
       return Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) <= 5;
     }
 
     setupTouch(touchZone, null, () => {
        isExpanded = !isExpanded;
        container.classList.toggle('expanded', isExpanded);
-       // Ensure scroll stays at bottom so newest walk remains visible
+       // Inspector Mode: Hide buttons so history takes over the bottom of the screen
+       buttonGrid.style.display = isExpanded ? 'none' : 'grid';
+       
        setTimeout(() => { container.scrollTop = container.scrollHeight; }, 10);
     });
 
@@ -354,7 +404,7 @@
         const response = await fetch(API_URL);
         const data = await response.json(); 
         
-        // 0. Handle Onboarding
+        // 0. Handle Onboarding strictly from "People" Tab
         if (!currentUser) {
             const obList = document.getElementById('ob-user-list');
             obList.innerHTML = '';
@@ -439,7 +489,6 @@
         });
         
         container.innerHTML = html;
-        // Snap to bottom on load
         setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
 
         // 4. Render Passport
@@ -470,7 +519,6 @@
             items.forEach(item => {
                 let warnClass = item.warning ? "warn-text" : "";
                 let bgClass = item.warning ? "warn-bg" : "";
-                
                 let d = new Date(item.date);
                 let valStr = !isNaN(d.getTime()) ? `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}` : item.date;
                 
@@ -488,15 +536,17 @@
       }
     }
 
-    async function logWalk(poop, puddle, type, note) {
+    async function logWalk(poop, puddle, type, note, customTime = null) {
       if (!currentUser) return;
       if (navigator.vibrate) navigator.vibrate(50);
       showToast("Saving...");
       
-      // Optimistic update omitted here to rely strictly on server truth.
+      const payload = { poop, puddle, type, who: currentUser, note: note };
+      if (customTime) payload.customTime = customTime;
+      
       await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ poop, puddle, type, who: currentUser, note: note })
+        body: JSON.stringify(payload)
       });
       location.reload(); 
     }
