@@ -26,28 +26,34 @@
     #logs { justify-content: flex-start; padding: 0 15px; }
     .main-dog-title { text-align: center; font-size: 36px; font-weight: bold; color: #4CAF50; margin: 5px 0; flex-shrink: 0;}
 
-    .history-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 10px; border-radius: 12px; flex-shrink: 0;}
+    /* History Layout */
+    .history-wrapper { position: relative; display: flex; flex-direction: column; margin-bottom: 15px; border-radius: 12px; flex-shrink: 0;}
+    .history-window { display: flex; flex-direction: column; scroll-behavior: smooth;}
     
-    /* Base history: 3 lines visible */
-    .history-window { overflow-y: hidden; display: flex; flex-direction: column; max-height: 155px; transition: max-height 0.3s ease-out; scroll-behavior: smooth;}
+    /* Strictly display only 3 lines. Expand to show all. */
+    .history-line:nth-child(n+4) { display: none; }
+    .history-window.expanded .history-line:nth-child(n+4) { display: flex; }
     
-    /* Inspector Mode (Expanded): Takes over remaining height, scrollable */
+    /* Inspector Mode styling */
     .history-window.expanded { max-height: none; flex-grow: 1; overflow-y: auto; padding-bottom: 20px;}
     
-    /* Enhanced outdoor readability for history */
-    .history-line { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #333; transition: opacity 0.2s, transform 0.2s;}
+    /* History Elements */
+    .history-line { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #333; transition: opacity 0.2s, transform 0.2s;}
     .history-line.deleting { opacity: 0.3; transform: translateX(-40px); }
     .history-line:last-child { border-bottom: none; }
     
-    .hl-left { display: flex; align-items: center; gap: 10px; }
-    .hl-time { color: #FFEB3B; font-size: 28px; font-weight: bold; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .hl-dash { color: #FFFFFF; font-weight: bold; }
-    .hl-person { font-weight: bold; color: #FFFFFF; font-size: 28px;}
-    .hl-icons { font-size: 28px; letter-spacing: 2px; text-align: right; min-width: 60px;}
+    .hl-left { display: flex; align-items: center; gap: 8px; flex-shrink: 1; min-width: 0; }
+    .hl-arrow { width: 20px; color: #FFEB3B; font-size: 20px; text-align: center; flex-shrink: 0; }
+    .hl-time { color: #FFEB3B; font-size: 26px; font-weight: bold; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .hl-dash { color: #FFFFFF; font-weight: bold; flex-shrink: 0;}
+    .hl-person { font-weight: bold; color: #FFFFFF; font-size: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    
+    .hl-icons { flex-shrink: 0; font-size: 26px; letter-spacing: 2px; text-align: right; white-space: nowrap;}
     .green-dog { display: inline-block; color: transparent; text-shadow: 0 0 0 #4CAF50; }
     .red-note { color: #F44336; font-weight: bold; font-size: 22px; margin-left: 5px; cursor: pointer; }
 
-    .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-shrink: 0; margin-top: auto; padding-bottom: 25px;}
+    /* Button Grid (Locks under history, leaving black space below) */
+    .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-shrink: 0; margin-bottom: 10px; }
     .btn { touch-action: none; padding: 35px 0; font-size: 55px; border: none; border-radius: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     .btn:active { opacity: 0.6; transform: scale(0.98); }
     
@@ -58,10 +64,9 @@
 
     .custody-lock { display: none; flex-grow: 1; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; letter-spacing: 2px; color: #F57F17;}
     
+    /* Modals & Toasts */
     #toast { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; font-size: 15px; font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
-    
     .modal-backdrop { display: none; position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px);}
-    
     .confirm-box { background: #222; padding: 25px; border-radius: 16px; text-align: center; width: 85%; max-width: 320px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     .confirm-msg { font-size: 20px; font-weight: bold; margin-bottom: 25px; }
     .confirm-row { display: flex; gap: 15px; justify-content: space-between; }
@@ -70,7 +75,7 @@
     .btn-no { background: #555; color: white; }
 
     .ob-btn { background: #333; color: white; border: 1px solid #555; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin: 5px; cursor: pointer;}
-    .ob-input { background: #222; color: white; border: 1px solid #555; padding: 15px; font-size: 18px; border-radius: 12px; margin-top: 15px; width: 100%; box-sizing: border-box; outline:none; color-scheme: dark;}
+    .ob-input { background: #222; color: white; border: 1px solid #555; padding: 15px; font-size: 18px; border-radius: 12px; width: 100%; box-sizing: border-box; outline:none; }
     .ob-save { background: #4CAF50; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 12px; margin-top: 15px; cursor: pointer; width: 100%;}
     
     .list-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; font-size: 16px;}
@@ -92,22 +97,22 @@
     <div style="width: 100%; max-width: 320px; text-align: center;">
       <h2 style="margin-bottom: 25px; font-size: 28px;">Who are you?</h2>
       <div id="ob-user-list" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"></div>
-      <div style="margin-top: 35px; color: var(--muted); font-size: 14px;">Or enter a new name:</div>
+      <div style="margin-top: 35px; color: var(--muted); font-size: 14px; margin-bottom: 10px;">Or enter a new name:</div>
       <input type="text" id="ob-new-name" class="ob-input" placeholder="Your name...">
       <button class="ob-save" onclick="saveNewUser()">Save Name</button>
     </div>
   </div>
 
-  <!-- Post-Factum Time Picker Modal -->
+  <!-- Post-Factum 4-Digit Time Modal -->
   <div id="pf-modal" class="modal-backdrop">
     <div class="confirm-box">
-      <h3 style="margin-top:0; color:#4CAF50;">Log Past Event</h3>
+      <h3 style="margin-top:0; color:#4CAF50;">Post Factum Log</h3>
       <div id="pf-type-label" style="margin-bottom: 15px; font-weight:bold; font-size:24px;"></div>
-      <input type="datetime-local" id="pf-time" class="ob-input">
-      <input type="text" id="pf-note" class="ob-input" placeholder="Optional note...">
-      <div class="confirm-row" style="margin-top: 20px;">
+      <div style="color: #aaa; font-size: 14px; margin-bottom: 15px;">Enter 4 digits (e.g. 1430)</div>
+      <input type="tel" id="pf-time" class="ob-input" maxlength="4" placeholder="HHMM" style="font-size: 36px; text-align: center; letter-spacing: 8px; font-weight: bold; margin-top: 0; background: #111;">
+      <div class="confirm-row" style="margin-top: 25px;">
         <button class="confirm-btn btn-no" onclick="closePF()">Cancel</button>
-        <button class="confirm-btn btn-yes" onclick="savePF()">Save Log</button>
+        <button class="confirm-btn btn-yes" onclick="savePF()">Save</button>
       </div>
     </div>
   </div>
@@ -136,7 +141,7 @@
     <div id="active-interface" style="display: flex; flex-direction: column; height: 100%;">
       <div id="main-dog-name" class="main-dog-title">Micka</div>
 
-      <!-- History & Inspector Window -->
+      <!-- History / Inspector Window -->
       <div class="history-wrapper" id="history-touch-zone">
          <div class="history-window" id="history-container">
             <div style="color: #fff; text-align: center; margin: auto;">Loading...</div>
@@ -150,19 +155,21 @@
         <button class="btn btn-yellow" id="btn-custody">👤</button>
         <button class="btn btn-blue" id="btn-puddle">💦</button>
       </div>
+      
+      <!-- Bottom Spacer to soak up remaining screen height -->
+      <div style="flex-grow: 1;"></div>
     </div>
   </div>
 
   <!-- PASSPORT TAB -->
-  <div id="health" class="tab-content" style="overflow-y: auto;">
+  <div id="health" class="tab-content">
     <h2 id="passport-title" style="font-size: 32px; color: #4CAF50; margin: 15px 0; text-align:center;">Micka</h2>
     <div id="passport-container">Loading...</div>
-    <!-- Change User Button to fix phone caching issues -->
     <button class="change-user-btn" onclick="triggerChangeUser()">Change User / Fix Name</button>
   </div>
 
   <!-- EVENTS TAB -->
-  <div id="events" class="tab-content" style="overflow-y: auto;">
+  <div id="events" class="tab-content">
     <div id="events-container">Loading...</div>
   </div>
 
@@ -225,13 +232,7 @@
     function openPF(type, poop, puddle) {
         pfParams = { type, poop, puddle };
         document.getElementById('pf-type-label').innerText = type + (poop ? " 💩" : "") + (puddle ? " 💦" : "");
-        
-        // Setup local datetime string format exactly as browser requires (YYYY-MM-DDThh:mm)
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        document.getElementById('pf-time').value = now.toISOString().slice(0, 16);
-        document.getElementById('pf-note').value = "";
-        
+        document.getElementById('pf-time').value = "";
         document.getElementById('pf-modal').style.display = 'flex';
     }
 
@@ -240,16 +241,32 @@
     }
 
     function savePF() {
-        const timeVal = document.getElementById('pf-time').value;
-        const noteVal = document.getElementById('pf-note').value;
-        if(!timeVal) {
-            showToast("Time is required");
+        const val = document.getElementById('pf-time').value;
+        if(val.length !== 4 || isNaN(val)) {
+            showToast("Enter exactly 4 digits");
             return;
         }
-        // Convert back to standard ISO for the backend script
-        const customTime = new Date(timeVal).toISOString(); 
+        
+        let hh = parseInt(val.substring(0,2));
+        let mm = parseInt(val.substring(2,4));
+
+        if(hh > 23 || mm > 59) {
+            showToast("Invalid time");
+            return;
+        }
+
+        let now = new Date();
+        let target = new Date();
+        target.setHours(hh, mm, 0, 0);
+
+        // If the inputted time is geometrically in the future compared to right now,
+        // it logically means the user is referring to yesterday.
+        if(target > now) {
+            target.setDate(target.getDate() - 1);
+        }
+
         closePF();
-        logWalk(pfParams.poop, pfParams.puddle, pfParams.type, noteVal, customTime);
+        logWalk(pfParams.poop, pfParams.puddle, pfParams.type, "", target.toISOString());
     }
 
     function triggerChangeUser() {
@@ -280,7 +297,7 @@
       let startX, startY, currentX, currentY;
       
       const start = (e) => {
-         isLong = false;
+         isLong = false; 
          startX = e.touches ? e.touches[0].clientX : e.clientX;
          startY = e.touches ? e.touches[0].clientY : e.clientY;
          currentX = startX; currentY = startY;
@@ -295,8 +312,9 @@
       const move = (e) => {
          currentX = e.touches ? e.touches[0].clientX : e.clientX;
          currentY = e.touches ? e.touches[0].clientY : e.clientY;
-         // Cancel long press timer if finger wanders too far
-         if (Math.abs(currentX - startX) > 20 || Math.abs(currentY - startY) > 20) {
+         
+         // STRICT CANCEL: If finger wanders even slightly, kill the long press timer
+         if (Math.abs(currentX - startX) > 15 || Math.abs(currentY - startY) > 15) {
             if (timer) { clearTimeout(timer); timer = null; }
          }
       };
@@ -304,14 +322,16 @@
       const end = (e) => {
          if (timer) { clearTimeout(timer); timer = null; }
          
-         // Only evaluate short-tap or swipe if a long-press hasn't already fired
          if (!isLong) {
-             // Detect Swipe Up (Negative Y movement > 40px, straight up)
-             if (startY - currentY > 40 && Math.abs(currentX - startX) < 50) {
-                 if (onSwipeUp) onSwipeUp();
+             let diffY = startY - currentY;
+             let diffX = Math.abs(currentX - startX);
+             
+             // Evaluate Swipe Up (moved up more than 40px, straight)
+             if (onSwipeUp && diffY > 40 && diffX < 50) {
+                 onSwipeUp();
              } 
-             // Detect normal short tap (minimal movement)
-             else if (Math.abs(currentX - startX) <= 20 && Math.abs(currentY - startY) <= 20) {
+             // Evaluate Short Tap (did not wander outside a 15px radius)
+             else if (diffX < 15 && Math.abs(currentY - startY) < 15) {
                  if (onShort) onShort();
              }
          }
@@ -326,7 +346,6 @@
       el.addEventListener('mouseleave', () => { if (timer) { clearTimeout(timer); timer = null; } });
     }
 
-    // Attach Swipe Up as the 4th parameter for Post-Factum logging
     setupTouch(document.getElementById('btn-walk'), 
       () => logWalk(false, false, 'Long Walk', ""), 
       () => { let note = prompt("Enter note:"); if (note !== null) logWalk(false, false, 'Long Walk', note); },
@@ -354,32 +373,26 @@
              () => logWalk(false, false, isCurrentlyCustodian ? 'Returned' : 'Custody', "")
          );
       }
-      // No post-factum swipe needed for custody
     );
 
     const touchZone = document.getElementById('history-touch-zone');
     const container = document.getElementById('history-container');
     const buttonGrid = document.getElementById('action-buttons-grid');
     let isExpanded = false;
-    
-    function isAtBottom() {
-      return Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) <= 5;
-    }
 
     setupTouch(touchZone, null, () => {
        isExpanded = !isExpanded;
        container.classList.toggle('expanded', isExpanded);
-       // Inspector Mode: Hide buttons so history takes over the bottom of the screen
+       // Hides buttons entirely when inspecting history to give full screen estate
        buttonGrid.style.display = isExpanded ? 'none' : 'grid';
-       
-       setTimeout(() => { container.scrollTop = container.scrollHeight; }, 10);
     });
 
     let touchX = 0;
     container.addEventListener('touchstart', e => { touchX = e.changedTouches[0].screenX; }, {passive: true});
     container.addEventListener('touchend', e => {
-      // GATEKEEPER: Must not be expanded AND scroll must be at absolute bottom
-      if (!isExpanded && isAtBottom()) {
+      // Must not be expanded AND scroll must be at absolute bottom to swipe-delete
+      let isAtBottom = Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) <= 5;
+      if (!isExpanded && isAtBottom) {
          if (touchX - e.changedTouches[0].screenX > 60) {
             requestUndo();
          }
@@ -390,13 +403,10 @@
       const d = new Date(dateStr);
       const now = new Date();
       const time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
-      const isToday = d.toDateString() === now.toDateString();
       const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
       const isYesterday = d.toDateString() === yesterday.toDateString();
 
-      if (isToday) return `<span style="visibility: hidden;">◀</span> ${time}`;
-      if (isYesterday) return `◀ ${time}`;
-      return `${time}`;
+      return { time: time, isYesterday: isYesterday };
     }
 
     async function fetchData() {
@@ -404,7 +414,6 @@
         const response = await fetch(API_URL);
         const data = await response.json(); 
         
-        // 0. Handle Onboarding strictly from "People" Tab
         if (!currentUser) {
             const obList = document.getElementById('ob-user-list');
             obList.innerHTML = '';
@@ -418,7 +427,6 @@
             document.getElementById('onboarding-modal').style.display = 'flex';
         }
 
-        // 1. Custody State
         const isAway = data.status.type === 'Custody';
         const lockScreen = document.getElementById('custody-lock');
         const activeUI = document.getElementById('active-interface');
@@ -435,7 +443,6 @@
             yellowBtn.innerHTML = isCurrentlyCustodian ? '🏡' : '👤';
         }
 
-        // 2. The 10-Minute Visual Merge 
         let mergedLogs = [];
         let currentGroup = null;
         
@@ -463,7 +470,6 @@
         });
         if (currentGroup) mergedLogs.push(currentGroup);
 
-        // 3. Render Walks
         let html = '';
         mergedLogs.forEach((log, index) => {
            let icons = '';
@@ -477,12 +483,16 @@
            }
            
            let idTag = (index === mergedLogs.length - 1) ? 'id="latest-row"' : '';
+           let tf = formatTime(log.time);
+           let arrowStyle = tf.isYesterday ? 'visibility: visible;' : 'visibility: hidden;';
+           
            html += `
              <div class="history-line" ${idTag}>
                <div class="hl-left">
-                 <span class="hl-time">${formatTime(log.time)}</span>
-                 <span class="hl-dash">&mdash;</span>
-                 <span class="hl-person">${log.who}</span>
+                 <div class="hl-arrow" style="${arrowStyle}">◀</div>
+                 <div class="hl-time">${tf.time}</div>
+                 <div class="hl-dash">&mdash;</div>
+                 <div class="hl-person">${log.who}</div>
                </div>
                <div class="hl-icons">${icons}</div>
              </div>`;
@@ -491,7 +501,6 @@
         container.innerHTML = html;
         setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
 
-        // 4. Render Passport
         let passHtml = '';
         data.dogInfo.forEach(info => {
             if (info.label.toLowerCase() === 'name') {
@@ -503,7 +512,6 @@
         });
         document.getElementById('passport-container').innerHTML = passHtml;
 
-        // 5. Render Events & Warning Logic
         let evHtml = '';
         let hasWarning = false;
         let categories = {};
